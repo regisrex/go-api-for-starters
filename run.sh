@@ -1,0 +1,1 @@
+CompileDaemon -command="./golang-apis"
