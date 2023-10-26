@@ -1,9 +1,12 @@
 package services
 
 import (
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"gitub.com/regisrex/golang-apis/helpers"
 	"gitub.com/regisrex/golang-apis/models"
@@ -56,17 +59,61 @@ func SignUp(c *gin.Context) {
 	}
 	user.ID = uuid.New()
 
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    user.ID,
+		"email": user.Email,
+	}).SignedString([]byte(os.Getenv("JWT_PRIVATE")))
+	if err != nil {
+		c.AbortWithError(500, err)
+		return
+	}
 	helpers.Database.Create(&user)
-	c.AbortWithStatusJSON(200, gin.H{
-		"message": "User created successfully",
+	c.JSON(200, gin.H{
+		"message": "Sign up successfully",
 		"success": true,
 		"status":  200,
-		"data":    map[string]any{"id": user.ID},
+		"data":    map[string]interface{}{"token": token},
 	})
 }
 
 func Ping(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Pong",
+	})
+}
+
+func Login(c *gin.Context) {
+	var body struct {
+		Email    string
+		Password string
+	}
+
+	c.Bind(&body)
+	var userWithTheEmail models.User
+	helpers.Database.Where("email = ? ", body.Email).First(&userWithTheEmail)
+	log.Print(userWithTheEmail)
+
+	passwordsMatch := utils_passwords.ComparePassword(body.Password, userWithTheEmail.Password)
+	if passwordsMatch != true {
+		c.JSON(406, gin.H{
+			"message": "Invalid crentials",
+			"success": false,
+			"status":  406,
+		})
+		return
+	}
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    userWithTheEmail.ID,
+		"email": userWithTheEmail.Email,
+	}).SignedString([]byte(os.Getenv("JWT_PRIVATE")))
+	if err != nil {
+		c.AbortWithError(500, err)
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "Logged in successfully",
+		"success": true,
+		"status":  200,
+		"data":    map[string]interface{}{"token": token},
 	})
 }

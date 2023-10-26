@@ -26,4 +26,6 @@ type NewsHeadline struct {
 	Quote       string
 	Description string
 	Body        string
+	UserRefer   uuid.UUID
+	User        User `gorm:"references:UserRefer"`
 }

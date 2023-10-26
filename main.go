@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"gitub.com/regisrex/golang-apis/helpers"
-	"gitub.com/regisrex/golang-apis/services"
+	auth_service "gitub.com/regisrex/golang-apis/services/auth"
 )
 
 func main() {
@@ -13,8 +13,9 @@ func main() {
 
 	app := gin.Default()
 
-	app.GET("/ping", services.Ping)
-	app.POST("/signup", services.SignUp)
+	app.GET("/ping", auth_service.Ping)
+	app.POST("/auth/signup", auth_service.SignUp)
+	app.POST("/auth/login", auth_service.Login)
 
 	app.Run()
 }
