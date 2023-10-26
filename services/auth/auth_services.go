@@ -1,9 +1,9 @@
 package services
 
 import (
-	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -12,6 +12,12 @@ import (
 	"gitub.com/regisrex/golang-apis/models"
 	utils_passwords "gitub.com/regisrex/golang-apis/utils/passwords"
 )
+
+type JwtPayload struct {
+	Id    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	jwt.RegisteredClaims
+}
 
 func SignUp(c *gin.Context) {
 	var body struct {
@@ -59,9 +65,12 @@ func SignUp(c *gin.Context) {
 	}
 	user.ID = uuid.New()
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    user.ID,
-		"email": user.Email,
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtPayload{
+		user.ID,
+		user.Email,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		},
 	}).SignedString([]byte(os.Getenv("JWT_PRIVATE")))
 	if err != nil {
 		c.AbortWithError(500, err)
@@ -89,11 +98,10 @@ func Login(c *gin.Context) {
 	}
 
 	c.Bind(&body)
-	var userWithTheEmail models.User
-	helpers.Database.Where("email = ? ", body.Email).First(&userWithTheEmail)
-	log.Print(userWithTheEmail)
+	var user models.User
+	helpers.Database.Where("email = ? ", body.Email).First(&user)
 
-	passwordsMatch := utils_passwords.ComparePassword(body.Password, userWithTheEmail.Password)
+	passwordsMatch := utils_passwords.ComparePassword(body.Password, user.Password)
 	if passwordsMatch != true {
 		c.JSON(406, gin.H{
 			"message": "Invalid crentials",
@@ -102,9 +110,12 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    userWithTheEmail.ID,
-		"email": userWithTheEmail.Email,
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtPayload{
+		user.ID,
+		user.Email,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		},
 	}).SignedString([]byte(os.Getenv("JWT_PRIVATE")))
 	if err != nil {
 		c.AbortWithError(500, err)
