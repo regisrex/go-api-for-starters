@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/google/uuid"
+	"gitub.com/regisrex/golang-apis/helpers"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +13,7 @@ const (
 )
 
 type User struct {
-	ID       uuid.UUID `gorm:"type:varchar(255);primary_key"`
+	ID       string `gorm:"type:varchar(255);primary_key"`
 	Email    string
 	Password string
 	Username string
@@ -21,11 +21,30 @@ type User struct {
 }
 
 type NewsHeadline struct {
-	gorm.Model
+	ID          string `gorm:"type:varchar(255);primary_key"`
 	Title       string
 	Quote       string
 	Description string
 	Body        string
-	UserRefer   uuid.UUID
-	User        User `gorm:"references:UserRefer"`
+	UserRefer   string
+	User        User `gorm:"foreignKey:UserRefer"`
+}
+
+// func (u *User) AfterFind(tx *gorm.DB) (err error) {
+// 	u.Password = ""
+// 	return
+// }
+
+func (u *User) BeforeDelete(tx *gorm.DB) (err error) {
+	helpers.Database.Where("UserRefer  =  ?", u.ID).Delete(&NewsHeadline{})
+	return
+}
+
+func (n *NewsHeadline) AfterFind(tx *gorm.DB) (err error) {
+	var headlineOwner User
+	helpers.Database.Where("id = ?", n.UserRefer).First(&headlineOwner)
+	headlineOwner.Password = ""
+	n.User = headlineOwner
+	return
+
 }

@@ -11,6 +11,7 @@ func main() {
 	helpers.LoadEnv()
 	helpers.ConnectDB()
 
+	helpers.Database.Exec("DROP TABLE news_headlines")
 	helpers.Database.AutoMigrate(&models.User{})
 	helpers.Database.AutoMigrate(&models.NewsHeadline{})
 

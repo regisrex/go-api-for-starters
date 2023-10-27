@@ -1,6 +1,7 @@
 package services
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -14,8 +15,8 @@ import (
 )
 
 type JwtPayload struct {
-	Id    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
+	Id    string `json:"id"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -63,7 +64,7 @@ func SignUp(c *gin.Context) {
 		})
 		return
 	}
-	user.ID = uuid.New()
+	user.ID = uuid.New().String()
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtPayload{
 		user.ID,
@@ -100,7 +101,7 @@ func Login(c *gin.Context) {
 	c.Bind(&body)
 	var user models.User
 	helpers.Database.Where("email = ? ", body.Email).First(&user)
-
+	log.Print(user)
 	passwordsMatch := utils_passwords.ComparePassword(body.Password, user.Password)
 	if passwordsMatch != true {
 		c.JSON(406, gin.H{
