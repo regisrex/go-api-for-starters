@@ -10,21 +10,21 @@ import (
 func CreateHeadline(c *gin.Context) {
 	user_id, _ := c.Get("user_id")
 	var newHeadline struct {
-		Title       string `validate:"required"`
+		Title       string
 		Quote       string
 		Description string
 		Body        string
 	}
 	c.Bind(&newHeadline)
-	validationError := helpers.Validate.Struct(newHeadline)
-	if validationError != nil {
-		c.JSON(406, gin.H{
-			"message": "Invalid information given",
-			"success": false,
-			"status":  406,
-		})
-		return
-	}
+	// validationError := helpers.Validate.Struct(newHeadline)
+	// if validationError != nil {
+	// 	c.JSON(406, gin.H{
+	// 		"message": "Invalid information given",
+	// 		"success": false,
+	// 		"status":  406,
+	// 	})
+	// 	return
+	// }
 	helpers.Database.Create(&models.NewsHeadline{
 		ID:          uuid.New().String(),
 		Title:       newHeadline.Title,
@@ -64,21 +64,21 @@ func UpdateHeadline(c *gin.Context) {
 		c.Abort()
 	}
 	var body struct {
-		Title       string `validate:"required"`
+		Title       string
 		Quote       string
 		Description string
 		Body        string
 	}
 	c.Bind(&body)
-	validationError := helpers.Validate.Struct(body)
-	if validationError != nil {
-		c.JSON(406, gin.H{
-			"message": "Invalid information given",
-			"success": false,
-			"status":  406,
-		})
-		return
-	}
+	// validationError := helpers.Validate.Struct(body)
+	// if validationError != nil {
+	// 	c.JSON(406, gin.H{
+	// 		"message": "Invalid information given",
+	// 		"success": false,
+	// 		"status":  406,
+	// 	})
+	// 	return
+	// }
 	if body.Body != "" {
 		headline.Body = body.Body
 	}

@@ -22,23 +22,15 @@ type JwtPayload struct {
 
 func SignUp(c *gin.Context) {
 	var body struct {
-		Username        string      `validate:"required"`
-		Email           string      `validate:"required,email"`
-		Password        string      `validate:"required"`
-		ConfirmPassword string      `validate:"required"`
-		Role            models.Role `validate:"required"`
+		Username        string      
+		Email           string    
+		Password        string      
+		ConfirmPassword string      
+		Role            models.Role
 	}
 
 	c.Bind(&body)
-	validationError := helpers.Validate.Struct(body)
-	if validationError != nil {
-		c.IndentedJSON(http.StatusNotAcceptable, gin.H{
-			"message": "Invalid information given",
-			"success": false,
-			"status":  406,
-		})
-		return
-	}
+
 	if body.Password != body.ConfirmPassword {
 		c.IndentedJSON(http.StatusNotAcceptable, gin.H{
 			"message": "Passwords mismatch",

@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-playground/validator/v10"
+	// "github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -30,10 +30,10 @@ func ConnectDB() {
 	}
 }
 
-var Validate *validator.Validate
+// var Validate *validator.Validate
 
-func InitializeValidator() {
-	vdator := validator.New()
-	Validate = vdator
+// func InitializeValidator() {
+// 	vdator := validator.New()
+// 	Validate = vdator
 
-}
+// }

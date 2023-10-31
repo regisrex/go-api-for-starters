@@ -12,7 +12,7 @@ import (
 func main() {
 	helpers.LoadEnv()
 	helpers.ConnectDB()
-	helpers.InitializeValidator()
+	// helpers.InitializeValidator()
 
 	app := gin.Default()
 
